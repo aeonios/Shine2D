@@ -123,7 +123,7 @@ public class FBOGraphics extends Graphics {
 	 * Unbind from the FBO created
 	 */
 	private void unbind() {
-		EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, FBO);
+		EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 0);
 		GL11.glReadBuffer(GL11.GL_BACK); 
 	}
 	
