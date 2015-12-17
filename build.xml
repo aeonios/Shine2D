@@ -30,10 +30,6 @@
 
     <target name="dist" depends="compile" description="generate the distribution library package." >
         <mkdir dir="${dist}/lib"/>
-        <mkdir dir="${build}/org/starfire/shine/data"/>
-        <copy overwrite="true" todir="build/org/starfire/shine/data">
-            <fileset dir="${src}/org/starfire/shine/data"/>
-        </copy>
         <jar jarfile="${dist}/lib/shine2d.jar" basedir="${build}">
         </jar>
         <copy overwrite="true" todir="dist/lib">
