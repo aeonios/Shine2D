@@ -82,7 +82,7 @@ public class ShineTest{
                 windowGraphics.setLinePattern(Line.STIPPLE_DOTDASH, 2, -1 * (int) (frame % 16));
                 windowGraphics.drawLine(0, 0, window.getWidth(), window.getHeight()/2);
 
-                int n = 5;
+                int n = 2;
 
                 // draw n random red circles
                 windowGraphics.setColor(new Color(0.5f, 0, 0, 1));

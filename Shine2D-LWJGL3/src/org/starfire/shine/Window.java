@@ -7,6 +7,7 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.*;
 import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.system.libffi.Closure;
 import org.starfire.shine.util.Log;
 
 import static org.lwjgl.BufferUtils.*;
@@ -25,6 +26,7 @@ public class Window {
     static boolean glfw = false;
     static final long NULL = MemoryUtil.NULL;
     private GLFWErrorCallback errorCallback;
+    Closure debugProc;
 
     // window type enum
     public static final byte NORMAL = 0;
@@ -69,6 +71,7 @@ public class Window {
         glfwWindowHint(GLFW_GREEN_BITS, vm.greenBits());
         glfwWindowHint(GLFW_BLUE_BITS, vm.blueBits());
         glfwWindowHint(GLFW_REFRESH_RATE, vm.refreshRate());
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 
         // initialize the window
         this.windowID = glfwCreateWindow(vm.width(), vm.height(), name, NULL, NULL);
@@ -79,6 +82,9 @@ public class Window {
         if (!cap.GL_EXT_framebuffer_object){
             throw new UnsupportedOperationException("The system reports that framebuffer objects are not supported.");
         }
+
+        // initialize GL debug
+        debugProc = GLUtil.setupDebugMessageCallback();
 
         // initialize the window's graphics instance
         graphics = new Graphics(this);

@@ -30,6 +30,7 @@ public class Graphics {
 
     /** Various stored graphics state settings */
     private byte currentDrawingMode = 0;
+    private boolean useAA = true;
 
     private Color bgColor;
     private Color activeColor;
@@ -42,6 +43,8 @@ public class Graphics {
     private float scaleWidth = 1;
     private float scaleHeight = 1;
     private float rotAngle = 0;
+    private boolean mirrorVert = false;
+    private boolean mirrorHoriz = false;
 
     /** Constants */
     private static final int DEFAULT_SEGMENTS = 64; // default number of segments to use for drawing arcs.
@@ -52,7 +55,7 @@ public class Graphics {
     public static byte MODE_SCREEN = 3;
     public static byte MODE_ALPHA_MAP = 4;
 
-    public Graphics(Image img){
+    public Graphics(Image img) {
         image = img;
 
         // get a new FBO handle
@@ -71,7 +74,6 @@ public class Graphics {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, img.texID, 0);
         checkBufferState(); // ensure that the buffer did not end up malformed for whatever reason.
-        img.unbind();
     }
 
     public Graphics(Window win){
@@ -88,12 +90,14 @@ public class Graphics {
 
     private void bind(){
         // configure general settings for 2d drawing
-        glEnable(GL_LINE_STIPPLE);
+        if (linePattern != Line.STIPPLE_SOLID) {
+            glEnable(GL_LINE_STIPPLE);
+            glLineStipple(lineScale, linePattern);
+        }else{
+            glDisable(GL_LINE_STIPPLE);
+        }
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_LIGHTING);
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-        glEnable(GL_TEXTURE_2D);
-        glEnable(GL_FRAMEBUFFER_EXT);
 
         glShadeModel(GL_SMOOTH);
 
@@ -103,8 +107,6 @@ public class Graphics {
             window.makeCurrent();
         }
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboID);
-        glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
-        glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
 
         // configure perspective settings for flat 2d drawing to the given canvas.
         glMatrixMode(GL_PROJECTION); // set projection first
@@ -114,14 +116,28 @@ public class Graphics {
         if (window != null) {
             glViewport(0, 0, window.getWidth(), window.getHeight());
         }else{
-            glViewport(0, 0, image.width, image.height);
+            glViewport(0, 0, image.texWidth, image.texHeight);
         }
 
         // then set ortho third
+        int w;
+        int h;
         if (window != null) {
-            glOrtho(0, window.getWidth(), 0, window.getHeight(), -1.0, 1.0);
+            w = window.getWidth();
+            h = window.getHeight();
         }else{
-            glOrtho(0, image.width, 0, image.height, -1.0, 1.0);
+            w = image.texWidth;
+            h = image.texHeight;
+        }
+
+        if (mirrorVert && !mirrorHoriz){
+            glOrtho(0, w, h, 0, -1.0, 1.0);
+        }else if (mirrorHoriz && !mirrorVert){
+            glOrtho(w, 0, 0, h, -1.0, 1.0);
+        }else if (mirrorVert && mirrorHoriz){
+            glOrtho(w, 0, h, 0, -1.0, 1.0);
+        }else{
+            glOrtho(0, w, 0, h, -1.0, 1.0);
         }
 
         // finally switch to modelview
@@ -130,7 +146,6 @@ public class Graphics {
 
         activeColor.bind();
         glLineWidth(lineWidth);
-        glLineStipple(lineScale, linePattern);
         setDrawMode(currentDrawingMode);
     }
 
@@ -143,8 +158,6 @@ public class Graphics {
 
     public static void reset(){
         //clear the cached graphics instance to force it to reset the openGL state
-        glDisable(GL_FRAMEBUFFER_EXT);
-        glDisable(GL_TEXTURE_2D);
         current = null;
     }
 
@@ -226,18 +239,32 @@ public class Graphics {
         glLineWidth(width);
     }
 
-    public void setLinePattern(int scale, short pattern, int phase) {
-        phase = phase % 16;
-        //pattern = Line.rotl(pattern, phase);
-        this.lineScale = scale;
+    public void setLinePattern(short pattern, int scale, int phase) {
+        if (linePattern != Line.STIPPLE_SOLID) {
+            pattern = Line.rotr(pattern, -1 * phase);
+            this.lineScale = scale;
+            glEnable(GL_LINE_STIPPLE);
+            glLineStipple(scale, pattern);
+        }else{
+            glDisable(GL_LINE_STIPPLE);
+        }
         this.linePattern = pattern;
-        glLineStipple(scale, pattern);
+    }
+
+    public void mirrorVert(boolean mirror){
+        mirrorVert = mirror;
+        reset();
+    }
+
+    public void mirrorHoriz(boolean mirror){
+        mirrorHoriz = mirror;
+        reset();
     }
 
     public void clear(){
         predraw();
         glClearColor(bgColor.getRed(), bgColor.getGreen(), bgColor.getBlue(), bgColor.getAlpha());
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
     }
 
     public void setColor(Color c){
@@ -250,8 +277,12 @@ public class Graphics {
         scaleHeight = scaleY;
     }
 
-    public void setRotation(float rot){
-        rotAngle = rot;
+    public void setRotation(float angleInDegrees){
+        rotAngle = angleInDegrees;
+    }
+
+    public void antiAlias(boolean aa){
+        this.useAA = aa;
     }
 
     public void drawLine(float x1, float y1, float x2, float y2) {
@@ -335,25 +366,26 @@ public class Graphics {
         glEnd();
 
         // anti-aliasing
-
-        glBegin(GL_TRIANGLE_FAN);
-        glVertex2f(cx, cy);
-        if (end != 360) {
-            end -= 10;
-        }
-
-        for (int a = (int) start; a < (int) (end + step); a += step) {
-            float ang = a;
-            if (ang > end) {
-                ang = end;
+        if (useAA) {
+            glBegin(GL_TRIANGLE_FAN);
+            glVertex2f(cx, cy);
+            if (end != 360) {
+                end -= 10;
             }
 
-            float x = (float) (cx + (FastTrig.cos(Math.toRadians(ang + 10)) * width * scaleWidth / 2.0f));
-            float y = (float) (cy + (FastTrig.sin(Math.toRadians(ang + 10)) * height * scaleHeight / 2.0f));
+            for (int a = (int) start; a < (int) (end + step); a += step) {
+                float ang = a;
+                if (ang > end) {
+                    ang = end;
+                }
 
-            glVertex2f(x, y);
+                float x = (float) (cx + (FastTrig.cos(Math.toRadians(ang + 10)) * width * scaleWidth / 2.0f));
+                float y = (float) (cy + (FastTrig.sin(Math.toRadians(ang + 10)) * height * scaleHeight / 2.0f));
+
+                glVertex2f(x, y);
+            }
+            glEnd();
         }
-        glEnd();
         glLoadIdentity();
     }
 

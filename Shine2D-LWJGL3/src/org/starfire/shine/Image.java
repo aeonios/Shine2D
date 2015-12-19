@@ -1,5 +1,7 @@
 package org.starfire.shine;
 
+import org.starfire.shine.util.Log;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -55,6 +57,10 @@ public class Image {
 
         // load the texture data into a GL texture and create a Graphics object to draw to it.
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texWidth, texHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, imgData);
+
+        // unbind the texture since we don't need it to be bound unless we're actually drawing it on something.
+        unbind();
+
         graphics = new Graphics(this);
     }
 
@@ -65,7 +71,6 @@ public class Image {
 
     public void unbind(){
         glDisable(texType);
-        glEnable(texType);
     }
 
     public void setTexID(int tid){
@@ -99,6 +104,7 @@ public class Image {
         glEnd();
 
         glLoadIdentity();
+        unbind();
     }
 
     public void destroy(){
