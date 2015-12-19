@@ -21,7 +21,7 @@ public class ShineTest{
 
     public ShineTest() {
         try {
-            window = new Window("Shine Test", 1440, 900);
+            window = new Window("Shine Test", 1024, 768);
         }catch (Exception e){
             Log.error(e.getMessage());
         }
@@ -33,6 +33,7 @@ public class ShineTest{
         graphGraphics.setBackground(new Color(0, 0, 0, 1));
         graphGraphics.clear();
 
+        // Render to texture is broken.
         /*int n = 20;
 
         // draw n random red circles
@@ -64,11 +65,24 @@ public class ShineTest{
         while (!window.requestedToClose()){
             long frame = System.currentTimeMillis();
             if (frame > nextFrame){
+                nextFrame = frame + 30; // target ~30 fps
                 windowGraphics.clear();
                 //windowGraphics.drawImage(graphImage);
 
+                // draw some animated lines
+                windowGraphics.setColor(new Color(0, 1, 0));
+                windowGraphics.setLinePattern(Line.STIPPLE_DOT, 2, -1 * (int) (frame % 16));
+                windowGraphics.drawLine(0, 0, window.getWidth(), window.getHeight());
 
-                int n = 20;
+                windowGraphics.setColor(new Color(1, 0, 0));
+                windowGraphics.setLinePattern(Line.STIPPLE_DASH, 2, -1 * (int) (frame % 16));
+                windowGraphics.drawLine(0, 0, window.getWidth()/2, window.getHeight());
+
+                windowGraphics.setColor(new Color(0, 0, 1));
+                windowGraphics.setLinePattern(Line.STIPPLE_DOTDASH, 2, -1 * (int) (frame % 16));
+                windowGraphics.drawLine(0, 0, window.getWidth(), window.getHeight()/2);
+
+                int n = 5;
 
                 // draw n random red circles
                 windowGraphics.setColor(new Color(0.5f, 0, 0, 1));
@@ -87,8 +101,25 @@ public class ShineTest{
                 for (int i = 0 ; i < n ; i++) {
                     windowGraphics.fillOval((int) (Math.random() * window.getWidth()), (int) (Math.random() * window.getHeight()), 250, 250);
                 }
+
+                // draw n random yellow circles
+                windowGraphics.setColor(new Color(0.5f, 0.5f, 0, 1));
+                for (int i = 0 ; i < n ; i++) {
+                    windowGraphics.fillOval((int) (Math.random() * window.getWidth()), (int) (Math.random() * window.getHeight()), 250, 250);
+                }
+
+                // draw n random cyan circles
+                windowGraphics.setColor(new Color(0, 0.5f, 0.5f, 1));
+                for (int i = 0 ; i < n ; i++) {
+                    windowGraphics.fillOval((int) (Math.random() * window.getWidth()), (int) (Math.random() * window.getHeight()), 250, 250);
+                }
+
+                // draw n random magenta circles
+                windowGraphics.setColor(new Color(0.5f, 0, 0.5f, 1));
+                for (int i = 0 ; i < n ; i++) {
+                    windowGraphics.fillOval((int) (Math.random() * window.getWidth()), (int) (Math.random() * window.getHeight()), 250, 250);
+                }
                 window.redraw();
-                nextFrame = frame + 30; // target ~30 fps
             }
         }
         graphImage.destroy();
