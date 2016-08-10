@@ -68,8 +68,6 @@ public class Image {
         glEnable(texType);
         glBindTexture(texType, texID);
 
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
         glTranslatef(offsetX, offsetY, 0);
 
         float swidth = width * scaleX;

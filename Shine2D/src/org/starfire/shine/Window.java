@@ -47,6 +47,9 @@ public class Window {
 
         glfwSetErrorCallback(errorCallback = GLFWErrorCallback.createPrint(System.err));
 
+        // don't flush the pipeline when unbinding contexts because it can break things.
+        glfwWindowHint(GLFW_CONTEXT_RELEASE_BEHAVIOR, GLFW_RELEASE_BEHAVIOR_NONE);
+
         // set hints for window type
         switch (windowType) {
             case NORMAL :
@@ -143,4 +146,6 @@ public class Window {
     public void makeCurrent(){
         glfwMakeContextCurrent(windowID);
     }
+
+    public void unbind(){glfwMakeContextCurrent(NULL);}
 }

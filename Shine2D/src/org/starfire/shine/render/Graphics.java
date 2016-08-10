@@ -95,6 +95,8 @@ public abstract class Graphics {
 
     public abstract Color getPixel(int x, int y);
 
+    public abstract float[] getImageData();
+
     public void setBackground(Color c){
         bgColor = c;
     }

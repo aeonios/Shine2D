@@ -87,4 +87,13 @@ public class WindowGraphics extends Graphics {
         glReadPixels(x, y, 1, 1, GL_RGBA, GL_FLOAT, pixels);
         return new Color(pixels.get(0), pixels.get(1), pixels.get(2), pixels.get(3));
     }
+
+    public float[] getImageData(){
+        predraw(); // bind to the appropriate buffer so that glReadPixels will pull pixels from it.
+        FloatBuffer pixels = createFloatBuffer(window.getWidth() * window.getHeight() * 4);
+        float[] data = new float[window.getWidth() * window.getHeight() * 4];
+        glReadPixels(0, 0, 1, 1, GL_RGBA, GL_FLOAT, pixels);
+        pixels.get(data);
+        return data;
+    }
 }

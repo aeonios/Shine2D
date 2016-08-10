@@ -7,6 +7,8 @@ import org.starfire.shine.Window;
 import org.starfire.shine.geometry.Line;
 import org.starfire.shine.util.Log;
 
+import java.lang.management.ManagementFactory;
+
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.EXTFramebufferObject.*;
 
@@ -52,6 +54,7 @@ public class ShineTest{
                 windowGraphics.drawImage(graphImage);
 
                 window.redraw();
+                window.poll();
             }
         }
         graphImage.destroy();
@@ -139,7 +142,7 @@ public class ShineTest{
         graphGraphics.setLinePattern(Line.STIPPLE_DOTDASH, 2, -1 * (int) (frame % 16));
         graphGraphics.drawLine(0, 0, graphImage.width, graphImage.height/2);
 
-        int n = 2;
+        int n = 5;
 
         // draw n random red circles
         graphGraphics.setColor(new Color(0.5f, 0, 0, 1));

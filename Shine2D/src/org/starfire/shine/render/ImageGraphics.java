@@ -126,4 +126,21 @@ public class ImageGraphics extends Graphics {
 
         return new Color(pixelData[i], pixelData[i+1], pixelData[i+2], pixelData[i+3]);
     }
+
+    public float[] getImageData(){
+        // cache pixel data for faster reading
+        // as reading directly from openGL is unbelievably slow.
+        if (dirty){
+            predraw(); // bind to the appropriate buffer and load the texture so that glReadPixels will pull pixels from it.
+            if (pixelData == null) {
+                pixelData = new float[image.width * image.height * 4];
+            }
+            FloatBuffer pixels = createFloatBuffer(image.width * image.height * 4);
+            glReadPixels(0, 0, image.width, image.height, GL_RGBA, GL_FLOAT, pixels);
+            pixels.get(pixelData);
+            dirty = false;
+        }
+
+        return pixelData;
+    }
 }

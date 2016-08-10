@@ -2,6 +2,6 @@ Shine2D is a basic Open-GL based 2D graphics library for Java. It implements muc
 
 Shine features a variety of drawing modes including alpha blending (normal mode), add, multiply and screen, as well as alpha map to transfer the alpha channel from one image to another. It can also draw lines (with patterns and phase, fairly similar to Graphics2D), shapes and images with scaling, rotation and symmetric reflection.
 
-Currently only the LWJGL version works, and it only half-works at that. Render-to-texture seems to be broken for GL11 in LWJGL2.9.3, while rendering to the window buffer is additionally broken in 3.x. I'm not to the point where I can implement shaders yet and there's still some basic functionality that needs implementing and/or fixing, so no releases yet.
+The LWJGL 3.0 version is now fully working, although the features are fairly basic. There is also a simple test/example program demonstrating basic usage.
 
-License Info: TBA. "Free and Open Source"ù is a given, and I intend to use a license with terms that are favorable for whoever wants to use it in their ProjectX (and whatever terms that may imply, commercial or otherwise).
+License Info: Copyright Marcus Troyka, 2016. This library is released under the LGPL 3.0 license (https://www.gnu.org/licenses/lgpl-3.0.en.html). In short that means that this library is GPL and must be distributed as such, but any derivative works (ie your application) do *not* need to be GPL or open source or free in order to use it.
